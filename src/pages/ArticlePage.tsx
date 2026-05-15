@@ -36,6 +36,13 @@ export function ArticlePage({ section }: { section: ArticleSection }) {
     };
   }, [articlePath, section]);
 
+  const metaTitle = state.status === 'ready' ? state.meta.title : null;
+  useEffect(() => {
+    if (metaTitle) {
+      document.title = `${metaTitle} - OwnAI`;
+    }
+  }, [metaTitle]);
+
   if (state.status === 'loading') {
     return (
       <SectionLayout section={section}>
@@ -56,12 +63,6 @@ export function ArticlePage({ section }: { section: ArticleSection }) {
 
   const { Content, meta } = state;
   const tags = meta.tags || [];
-
-  useEffect(() => {
-    if (meta?.title) {
-      document.title = `${meta.title} - OwnAI`;
-    }
-  }, [meta?.title]);
 
   return (
     <SectionLayout section={section}>
