@@ -33,7 +33,7 @@ export function Header() {
   return (
     <header 
       className={`sticky top-0 z-20 flex min-h-[64px] items-center px-12 backdrop-blur-xl transition-all duration-300 border-b max-[1100px]:flex-wrap max-[1100px]:gap-4 max-[1100px]:px-6 max-[1100px]:py-4 ${
-        scrolled ? 'bg-white/95 border-[#f0f0f0] shadow-sm' : 'bg-white/60 border-transparent'
+        scrolled ? 'bg-white/95 border-[#eef1f5] shadow-sm' : 'bg-white/80 border-[#eef1f5]'
       }`}
     >
       <a className="inline-flex min-w-[190px] items-center gap-2.5 text-[22px] font-bold leading-none text-[#202124] no-underline transition-transform duration-300 hover:-translate-y-[1px]" href="/">
