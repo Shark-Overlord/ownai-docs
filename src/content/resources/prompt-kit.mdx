@@ -1,0 +1,26 @@
+---
+title: 组件提示词模板
+description: 把常用提示词沉淀成可复制的资产，并在文章里用组件展示。
+section: resources
+order: 1
+tags:
+  - Prompt
+  - Template
+---
+
+## 模板
+
+<PromptCard
+  title="React 组件生成提示词"
+  items={[
+    '说明组件目标用户和使用场景',
+    '列出 props、状态和边界情况',
+    '指定视觉风格、尺寸、响应式行为',
+    '要求输出可运行的 React + CSS 代码',
+  ]}
+  meta={{
+    role: 'Frontend Prompt',
+    output: '输出组件代码、样式代码和最小使用示例。',
+    constraints: ['不绑定具体 UI 框架', '保留可扩展 API', '移动端可用'],
+  }}
+/>
