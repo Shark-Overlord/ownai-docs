@@ -19,8 +19,13 @@ export function SectionPage({ section }: { section: ArticleSection }) {
         </p>
       </div>
       <div className="grid grid-cols-3 gap-6 max-[1100px]:grid-cols-2 max-[760px]:grid-cols-1">
-        {list.map((article) => (
-          <ArticleCard article={article} key={article.slug} />
+        {list.map((article, i) => (
+          <ArticleCard 
+            article={article} 
+            key={article.slug} 
+            className="animate-fade-in-up" 
+            style={{ animationDelay: `${i * 50}ms` }} 
+          />
         ))}
       </div>
     </SectionLayout>

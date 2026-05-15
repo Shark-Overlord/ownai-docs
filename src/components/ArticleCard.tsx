@@ -1,15 +1,16 @@
 import { Link } from 'react-router-dom';
 import type { ArticleMeta } from '../lib/articles';
 
-export function ArticleCard({ article }: { article: ArticleMeta }) {
+export function ArticleCard({ article, className, style }: { article: ArticleMeta, className?: string, style?: React.CSSProperties }) {
   return (
     <Link
-      className="flex min-h-[230px] flex-col justify-between rounded-lg border border-[#e5e7eb] bg-white p-6 text-inherit no-underline transition hover:-translate-y-0.5 hover:border-[#bcd8ff] hover:shadow-[0_14px_34px_rgba(22,119,255,0.08)]"
+      className={`group flex min-h-[230px] flex-col justify-between rounded-xl border border-[#e5e7eb] bg-white p-6 text-inherit no-underline transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-blue-300 hover:shadow-[0_20px_40px_rgba(22,119,255,0.12)] ${className || ''}`}
       to={article.href}
+      style={style}
     >
       <div>
         <span className="text-[13px] font-bold text-[#1677ff]">{article.section}</span>
-        <h2 className="my-3.5 text-[22px] font-bold tracking-normal text-[#111827]">
+        <h2 className="my-3.5 text-[22px] font-bold tracking-normal text-[#111827] transition-colors group-hover:text-blue-600">
           {article.title}
         </h2>
         {article.description ? (

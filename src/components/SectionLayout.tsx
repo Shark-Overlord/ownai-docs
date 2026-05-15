@@ -309,10 +309,10 @@ export function SectionLayout({ section, children }: SectionLayoutProps) {
   );
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     [
-      'block rounded-lg px-4 py-3 text-[15px] leading-snug no-underline transition-colors',
+      'block rounded-lg px-4 py-3 text-[15px] leading-snug no-underline transition-all duration-200',
       isActive
-        ? 'bg-[#e8f3ff] text-[#1677ff]'
-        : 'text-[#111827] hover:bg-[#e8f3ff] hover:text-[#1677ff]',
+        ? 'bg-blue-50 text-blue-600 font-medium'
+        : 'text-[#111827] hover:bg-gray-50 hover:text-blue-600 hover:translate-x-1',
     ].join(' ');
 
   return (
