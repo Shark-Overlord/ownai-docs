@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { Footer } from './Footer';
 import { ArticleSection, getArticlesBySection } from '../lib/articles';
 
@@ -301,7 +300,6 @@ const groupedSections: Partial<Record<ArticleSection, LearningGroup[]>> = {
 };
 
 export function SectionLayout({ section, children }: SectionLayoutProps) {
-  const location = useLocation();
   const list = getArticlesBySection(section);
   const copy = sectionCopy[section];
   const groups = groupedSections[section];
@@ -309,28 +307,12 @@ export function SectionLayout({ section, children }: SectionLayoutProps) {
     list.map((article) => article.slug.replace(`${section}/`, '')),
   );
 
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
-    const activeGroup = groups?.find((g) =>
-      g.items.some((item) => location.pathname.includes(item.slug))
-    );
-    return new Set(activeGroup ? [activeGroup.title] : groups ? [groups[0].title] : []);
-  });
-
-  const toggleGroup = (title: string) => {
-    setExpandedGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(title)) next.delete(title);
-      else next.add(title);
-      return next;
-    });
-  };
-
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     [
-      'relative block rounded-lg px-4 py-2.5 text-[14px] leading-snug no-underline transition-all duration-200',
+      'block rounded-lg px-4 py-2.5 text-[14px] leading-snug no-underline transition-all duration-200',
       isActive
-        ? 'bg-blue-50/60 text-blue-600 font-semibold before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-1/2 before:w-[3px] before:rounded-r-full before:bg-blue-600'
-        : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600 hover:translate-x-1',
+        ? 'bg-[#e8f3ff] text-[#1677ff] font-medium'
+        : 'text-[#111827] hover:bg-gray-50 hover:text-[#1677ff]',
     ].join(' ');
 
   return (
@@ -342,59 +324,41 @@ export function SectionLayout({ section, children }: SectionLayoutProps) {
           </NavLink>
           {groups ? (
             <div className="mt-6 grid gap-2">
-              {groups.map((group) => {
-                const isExpanded = expandedGroups.has(group.title);
-                return (
-                  <div className="grid gap-1" key={group.title}>
-                    <button
-                      onClick={() => toggleGroup(group.title)}
-                      className="flex w-full items-center justify-between px-4 pb-2 pt-4 text-left text-[13px] font-extrabold tracking-wider text-slate-400 uppercase transition-colors hover:text-slate-600"
-                    >
-                      <span>{group.title}</span>
-                      <svg
-                        width="10"
-                        height="6"
-                        viewBox="0 0 10 6"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className={`text-slate-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
-                      >
-                        <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </button>
-                    {isExpanded && (
-                      <div className="grid gap-1 animate-fade-in-up">
-                        {group.items.map((item) => {
-                          const isReady = existingArticleSlugs.has(item.slug);
-
-                          if (!isReady) {
-                            return (
-                              <span
-                                className="block rounded-lg px-4 py-2.5 text-[14px] leading-snug text-slate-400"
-                                key={item.title}
-                              >
-                                {item.title}
-                              </span>
-                            );
-                          }
-
-                          return (
-                            <NavLink className={linkClass} to={`/${section}/${item.slug}`} key={item.title}>
-                              {item.title}
-                            </NavLink>
-                          );
-                        })}
-                      </div>
-                    )}
+              {groups.map((group) => (
+                <div className="grid gap-1" key={group.title}>
+                  <div className="mb-2 mt-4 px-4">
+                    <span className="text-[13px] text-[#8a94a3]">{group.title}</span>
+                    <div className="mt-2 h-px w-full bg-[#f0f0f0]" />
                   </div>
-                );
-              })}
+                  {group.items.map((item) => {
+                    const isReady = existingArticleSlugs.has(item.slug);
+
+                    if (!isReady) {
+                      return (
+                        <span
+                          className="block rounded-lg px-4 py-2.5 text-[14px] leading-snug text-[#a3adb9]"
+                          key={item.title}
+                        >
+                          {item.title}
+                        </span>
+                      );
+                    }
+
+                    return (
+                      <NavLink className={linkClass} to={`/${section}/${item.slug}`} key={item.title}>
+                        {item.title}
+                      </NavLink>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
           ) : (
             <div className="mt-5 grid gap-2">
-              <span className="px-4 pb-2 pt-4 text-[13px] font-extrabold tracking-wider text-slate-400 uppercase">
-                文章
-              </span>
+              <div className="mb-2 mt-4 px-4">
+                <span className="text-[13px] text-[#8a94a3]">文章</span>
+                <div className="mt-2 h-px w-full bg-[#f0f0f0]" />
+              </div>
               {list.map((article) => (
                 <NavLink className={linkClass} to={article.href} key={article.slug}>
                   {article.title}
