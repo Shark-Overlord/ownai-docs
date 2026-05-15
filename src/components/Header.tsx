@@ -38,7 +38,7 @@ export function Header() {
     >
       <a className="inline-flex min-w-[190px] items-center gap-2.5 text-[22px] font-bold leading-none text-[#202124] no-underline transition-transform duration-300 hover:-translate-y-[1px]" href="/">
         <img src={logo} alt="" style={{ width: 32, height: 32 }} />
-        <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text hover:text-transparent transition-all duration-300">OwnAI</span>
+        <span className="animate-breath bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">OwnAI</span>
       </a>
 
       <form

@@ -2,6 +2,18 @@
 
 @theme {
   --animate-fade-in-up: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-breath: breath 3s ease-in-out infinite;
+}
+
+@keyframes breath {
+  0%, 100% {
+    opacity: 0.85;
+    filter: drop-shadow(0 0 4px rgba(37, 99, 235, 0.3));
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 12px rgba(147, 51, 234, 0.6));
+  }
 }
 
 @keyframes fade-in-up {

@@ -35,7 +35,7 @@ export function Footer() {
         <div>
           <Link className="group inline-flex items-center gap-2.5 text-[22px] font-bold leading-none text-[#111827] no-underline transition-transform duration-300 hover:-translate-y-[1px]" to="/">
             <img src={logo} alt="" style={{ width: 30, height: 30 }} />
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text transition-all duration-300 group-hover:text-transparent">OwnAI</span>
+            <span className="animate-breath bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">OwnAI</span>
           </Link>
           <p className="mt-4 max-w-[420px] text-sm leading-7">
             {'\u6c89\u6dc0 UI\u3001\u4ee3\u7801\u3001\u63d0\u793a\u8bcd\u4e0e\u8bbe\u8ba1\u8d44\u4ea7\uff0c\u8ba9\u6bcf\u4e00\u6b21\u521b\u4f5c\u90fd\u53ef\u4ee5\u590d\u7528\u4e0e\u589e\u957f\u3002'}
