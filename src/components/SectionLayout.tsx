@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
-import { NavLink } from 'react-router-dom';
+import { useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { Footer } from './Footer';
 import { ArticleSection, getArticlesBySection } from '../lib/articles';
 
@@ -20,7 +20,7 @@ export const sectionCopy: Record<ArticleSection, { title: string; description: s
 
 interface SectionLayoutProps {
   section: ArticleSection;
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 interface LearningGroup {
@@ -301,61 +301,98 @@ const groupedSections: Partial<Record<ArticleSection, LearningGroup[]>> = {
 };
 
 export function SectionLayout({ section, children }: SectionLayoutProps) {
+  const location = useLocation();
   const list = getArticlesBySection(section);
   const copy = sectionCopy[section];
   const groups = groupedSections[section];
   const existingArticleSlugs = new Set(
     list.map((article) => article.slug.replace(`${section}/`, '')),
   );
+
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
+    const activeGroup = groups?.find((g) =>
+      g.items.some((item) => location.pathname.includes(item.slug))
+    );
+    return new Set(activeGroup ? [activeGroup.title] : groups ? [groups[0].title] : []);
+  });
+
+  const toggleGroup = (title: string) => {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(title)) next.delete(title);
+      else next.add(title);
+      return next;
+    });
+  };
+
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     [
-      'block rounded-lg px-4 py-3 text-[15px] leading-snug no-underline transition-all duration-200',
+      'relative block rounded-lg px-4 py-2.5 text-[14px] leading-snug no-underline transition-all duration-200',
       isActive
-        ? 'bg-blue-50 text-blue-600 font-medium'
-        : 'text-[#111827] hover:bg-gray-50 hover:text-blue-600 hover:translate-x-1',
+        ? 'bg-blue-50/60 text-blue-600 font-semibold before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-1/2 before:w-[3px] before:rounded-r-full before:bg-blue-600'
+        : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600 hover:translate-x-1',
     ].join(' ');
 
   return (
     <main className="min-h-[calc(100vh-64px)] bg-white lg:pl-[320px]">
       <aside className="border-[#e5e7eb] bg-white lg:fixed lg:left-0 lg:top-[64px] lg:h-[calc(100vh-64px)] lg:w-[320px] lg:overflow-auto lg:border-r">
-        <nav className="grid gap-2 px-[5px] py-14" aria-label={`${copy.title}导航`}>
+        <nav className="grid gap-2 px-5 py-10" aria-label={`${copy.title}导航`}>
           <NavLink className={linkClass} to={`/${section}`} end>
-            {copy.title}
-            总览
+            {copy.title} 总览
           </NavLink>
           {groups ? (
-            <div className="mt-5 grid gap-7">
-              {groups.map((group) => (
-                <div className="grid gap-1" key={group.title}>
-                  <span className="border-b border-[#e5e7eb] px-4 pb-2 pt-2 text-[13px] font-bold text-[#8a94a3]">
-                    {group.title}
-                  </span>
-                  {group.items.map((item) => {
-                    const isReady = existingArticleSlugs.has(item.slug);
+            <div className="mt-6 grid gap-2">
+              {groups.map((group) => {
+                const isExpanded = expandedGroups.has(group.title);
+                return (
+                  <div className="grid gap-1" key={group.title}>
+                    <button
+                      onClick={() => toggleGroup(group.title)}
+                      className="flex w-full items-center justify-between px-4 pb-2 pt-4 text-left text-[13px] font-extrabold tracking-wider text-slate-400 uppercase transition-colors hover:text-slate-600"
+                    >
+                      <span>{group.title}</span>
+                      <svg
+                        width="10"
+                        height="6"
+                        viewBox="0 0 10 6"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className={`text-slate-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
+                      >
+                        <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </button>
+                    {isExpanded && (
+                      <div className="grid gap-1 animate-fade-in-up">
+                        {group.items.map((item) => {
+                          const isReady = existingArticleSlugs.has(item.slug);
 
-                    if (!isReady) {
-                      return (
-                        <span
-                          className="block rounded-lg px-4 py-2.5 text-[14px] leading-snug text-[#a3adb9]"
-                          key={item.title}
-                        >
-                          {item.title}
-                        </span>
-                      );
-                    }
+                          if (!isReady) {
+                            return (
+                              <span
+                                className="block rounded-lg px-4 py-2.5 text-[14px] leading-snug text-slate-400"
+                                key={item.title}
+                              >
+                                {item.title}
+                              </span>
+                            );
+                          }
 
-                    return (
-                      <NavLink className={linkClass} to={`/${section}/${item.slug}`} key={item.title}>
-                        {item.title}
-                      </NavLink>
-                    );
-                  })}
-                </div>
-              ))}
+                          return (
+                            <NavLink className={linkClass} to={`/${section}/${item.slug}`} key={item.title}>
+                              {item.title}
+                            </NavLink>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="mt-5 grid gap-2">
-              <span className="border-b border-[#e5e7eb] px-4 pb-2 pt-2 text-[13px] font-bold text-[#8a94a3]">
+              <span className="px-4 pb-2 pt-4 text-[13px] font-extrabold tracking-wider text-slate-400 uppercase">
                 文章
               </span>
               {list.map((article) => (
