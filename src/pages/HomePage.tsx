@@ -1,9 +1,14 @@
 import { ArrowRight } from 'lucide-react';
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Footer } from '../components/Footer';
 import homeBg from './assert/image/bg.png';
 
 export function HomePage() {
+  useEffect(() => {
+    document.title = 'OwnAI - 沉淀知识资产';
+  }, []);
+
   return (
     <>
       <main

@@ -57,6 +57,12 @@ export function ArticlePage({ section }: { section: ArticleSection }) {
   const { Content, meta } = state;
   const tags = meta.tags || [];
 
+  useEffect(() => {
+    if (meta?.title) {
+      document.title = `${meta.title} - OwnAI`;
+    }
+  }, [meta?.title]);
+
   return (
     <SectionLayout section={section}>
       <article className="min-w-0 max-w-[960px]">

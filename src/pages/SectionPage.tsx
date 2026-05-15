@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { ArticleCard } from '../components/ArticleCard';
 import { SectionLayout, sectionCopy } from '../components/SectionLayout';
 import { ArticleSection, getArticlesBySection } from '../lib/articles';
@@ -5,6 +6,10 @@ import { ArticleSection, getArticlesBySection } from '../lib/articles';
 export function SectionPage({ section }: { section: ArticleSection }) {
   const list = getArticlesBySection(section);
   const copy = sectionCopy[section];
+
+  useEffect(() => {
+    document.title = `${copy.title} - OwnAI`;
+  }, [copy.title]);
 
   return (
     <SectionLayout section={section}>
