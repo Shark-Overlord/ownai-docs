@@ -33,9 +33,9 @@ export function Footer() {
     <footer className="border-t border-[#eef1f5] bg-white px-12 py-10 text-[#50617a] max-[760px]:px-6">
       <div className="grid grid-cols-[minmax(260px,1fr)_2fr] gap-12 max-[900px]:grid-cols-1">
         <div>
-          <Link className="inline-flex items-center gap-2.5 text-[22px] font-bold leading-none text-[#111827] no-underline" to="/">
+          <Link className="group inline-flex items-center gap-2.5 text-[22px] font-bold leading-none text-[#111827] no-underline transition-transform duration-300 hover:-translate-y-[1px]" to="/">
             <img src={logo} alt="" style={{ width: 30, height: 30 }} />
-            <span>OwnAI</span>
+            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text transition-all duration-300 group-hover:text-transparent">OwnAI</span>
           </Link>
           <p className="mt-4 max-w-[420px] text-sm leading-7">
             {'\u6c89\u6dc0 UI\u3001\u4ee3\u7801\u3001\u63d0\u793a\u8bcd\u4e0e\u8bbe\u8ba1\u8d44\u4ea7\uff0c\u8ba9\u6bcf\u4e00\u6b21\u521b\u4f5c\u90fd\u53ef\u4ee5\u590d\u7528\u4e0e\u589e\u957f\u3002'}
@@ -44,10 +44,10 @@ export function Footer() {
 
         <div className="grid grid-cols-3 gap-8 max-[760px]:grid-cols-1">
           {footerLinks.map((group) => (
-            <nav className="grid gap-3" key={group.title} aria-label={group.title}>
+            <nav className="group grid gap-3" key={group.title} aria-label={group.title}>
               <strong className="text-sm text-[#111827]">{group.title}</strong>
               {group.links.map((item) => (
-                <Link className="text-sm text-[#50617a] no-underline hover:text-[#1677ff]" to={item.to} key={item.label}>
+                <Link className="text-sm text-[#50617a] no-underline transition-all duration-300 hover:text-blue-600 group-hover:opacity-40 hover:!opacity-100" to={item.to} key={item.label}>
                   {item.label}
                 </Link>
               ))}
