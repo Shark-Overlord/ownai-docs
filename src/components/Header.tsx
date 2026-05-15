@@ -1,7 +1,7 @@
 import {
   Search,
 } from 'lucide-react';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import logo from '../pages/assert/image/logo.png';
 
@@ -13,7 +13,16 @@ const navItems = [
 
 export function Header() {
   const [query, setQuery] = useState('');
+  const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -22,18 +31,22 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-20 flex min-h-[64px] items-center border-b border-[#f0f0f0] bg-white/95 px-12 backdrop-blur-xl max-[1100px]:flex-wrap max-[1100px]:gap-4 max-[1100px]:px-6 max-[1100px]:py-4">
-      <a className="inline-flex min-w-[190px] items-center gap-2.5 text-[22px] font-bold leading-none text-[#202124] no-underline" href="/">
+    <header 
+      className={`sticky top-0 z-20 flex min-h-[64px] items-center px-12 backdrop-blur-xl transition-all duration-300 border-b max-[1100px]:flex-wrap max-[1100px]:gap-4 max-[1100px]:px-6 max-[1100px]:py-4 ${
+        scrolled ? 'bg-white/95 border-[#f0f0f0] shadow-sm' : 'bg-white/60 border-transparent'
+      }`}
+    >
+      <a className="inline-flex min-w-[190px] items-center gap-2.5 text-[22px] font-bold leading-none text-[#202124] no-underline transition-transform duration-300 hover:-translate-y-[1px]" href="/">
         <img src={logo} alt="" style={{ width: 32, height: 32 }} />
-        <span>OwnAI</span>
+        <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text hover:text-transparent transition-all duration-300">OwnAI</span>
       </a>
 
       <form
-        className="ml-auto mr-12 flex h-9 w-[300px] items-center gap-2.5 rounded-full bg-[#f7f8fa] px-3.5 text-[#b8c0cc] max-[1100px]:order-3 max-[1100px]:mx-0 max-[1100px]:w-full"
+        className="ml-auto mr-12 flex h-9 w-[300px] items-center gap-2.5 rounded-full bg-[#f7f8fa] px-3.5 text-[#b8c0cc] transition-all duration-300 focus-within:w-[320px] focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:shadow-sm max-[1100px]:order-3 max-[1100px]:mx-0 max-[1100px]:w-full focus-within:max-[1100px]:w-full"
         role="search"
         onSubmit={handleSubmit}
       >
-        <Search style={{ width: 17, height: 17 }} strokeWidth={2.2} />
+        <Search style={{ width: 17, height: 17 }} strokeWidth={2.2} className="transition-colors focus-within:text-blue-500" />
         <input
           className="min-w-0 flex-1 border-0 bg-transparent text-sm text-[#111827] outline-none placeholder:text-[#b8c0cc]"
           value={query}
@@ -53,8 +66,10 @@ export function Header() {
             end
             className={({ isActive }) =>
               [
-                'relative inline-flex h-[64px] items-center whitespace-nowrap text-base font-medium no-underline max-[1100px]:h-10',
-                isActive ? 'text-[#111827] after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-[#1677ff]' : 'text-[#202124]',
+                'group relative inline-flex h-[64px] items-center whitespace-nowrap text-base font-medium no-underline max-[1100px]:h-10 transition-colors duration-300 hover:text-blue-600',
+                isActive 
+                  ? 'text-blue-600 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-blue-600' 
+                  : 'text-[#50617a] after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-300 hover:after:w-full',
               ].join(' ')
             }
           >
