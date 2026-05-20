@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { Footer } from './Footer';
 import { ArticleSection, getArticlesBySection } from '../lib/articles';
+import { resourceLinks } from '../lib/resourceLinks';
 
 export const sectionCopy: Record<ArticleSection, { title: string; description: string }> = {
   components: {
@@ -13,7 +14,7 @@ export const sectionCopy: Record<ArticleSection, { title: string; description: s
   },
   resources: {
     title: '资源',
-    description: '整理 OwnAI 其他产品、工具、模板和外部资料。',
+    description: '集中放置 OwnAI 自有产品和项目入口，方便快速访问。',
   },
 };
 
@@ -320,9 +321,35 @@ export function SectionLayout({ section, children }: SectionLayoutProps) {
       <aside className="border-[#e5e7eb] bg-white lg:fixed lg:left-0 lg:top-[64px] lg:h-[calc(100vh-64px)] lg:w-[320px] lg:overflow-auto lg:border-r">
         <nav className="grid gap-2 px-5 py-10" aria-label={`${copy.title}导航`}>
           <NavLink className={linkClass} to={`/${section}`} end>
-            {copy.title} 总览
+            {section === 'resources' ? copy.title : `${copy.title} 总览`}
           </NavLink>
-          {groups ? (
+          {section === 'resources' ? (
+            resourceLinks.length > 0 ? (
+              <div className="mt-5 grid gap-2">
+                <div className="mb-2 mt-4 px-4">
+                  <span className="text-[13px] text-[#8a94a3]">项目链接</span>
+                  <div className="mt-2 h-px w-full bg-[#f0f0f0]" />
+                </div>
+                {resourceLinks.map((item) =>
+                  item.external ? (
+                    <a
+                      className="block rounded-lg px-4 py-2.5 text-[14px] leading-snug text-[#111827] no-underline transition-all duration-200 hover:bg-gray-50 hover:text-[#1677ff]"
+                      href={item.href}
+                      key={item.title}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      {item.title}
+                    </a>
+                  ) : (
+                    <NavLink className={linkClass} to={item.href} key={item.title}>
+                      {item.title}
+                    </NavLink>
+                  ),
+                )}
+              </div>
+            ) : null
+          ) : groups ? (
             <div className="mt-6 grid gap-2">
               {groups.map((group) => (
                 <div className="grid gap-1" key={group.title}>
