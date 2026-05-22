@@ -1,0 +1,89 @@
+---
+title: Prompt Vault Vision
+description: 本地视觉 Prompt 资产管理器，用于持续沉淀 GitHub 上的视觉 Prompt、效果图、Web UI 组件仓库、Skill 仓库和相关证据链。
+section: resources
+order: 1
+tags:
+  - Prompt
+  - Vision
+  - GitHub
+  - Asset Library
+---
+
+## 项目定位
+
+Prompt Vault Vision 是 OwnAI 的第一个资源项目，定位为本地视觉 Prompt 资产管理器。
+
+它不是简单的收藏夹，而是围绕“Prompt + 效果图 + 来源页面 + 匹配证据 + 标签 + 本地检索”建立的一套长期资产系统。适合持续收集图像生成、视频生成、Web UI、AI Skill、Agent 工具和 MCP 服务相关的开源仓库与案例。
+
+## 解决什么问题
+
+- 把分散在 GitHub、页面截图和仓库说明里的视觉 Prompt 统一归档。
+- 给 Prompt 绑定效果图、来源页面、匹配证据和筛选状态，避免只保存一段文本后失去上下文。
+- 对 Web UI 组件库、设计规范仓库、Skill 仓库进行分类收藏和画像评分。
+- 用本地 SQLite 做索引，图片和导出文件保存在本地目录，方便离线维护和迁移。
+- 支持定时搜索、仓库扫描、标注任务和运行记录，减少人工重复整理。
+
+## 核心能力
+
+- GitHub 增量发现：按图像生成、视频生成、Web UI、Skill 等分类搜索相关仓库。
+- 仓库去重：对 URL、Fork、相似内容和图片 hash 做归一化处理。
+- Prompt 资产库：保存 Prompt、效果图、来源页面、证据链、翻译、标签和筛选状态。
+- Web UI 资产库：收藏前端组件库、设计规范和 UI 仓库，并按画像得分排序。
+- Skill 资产库：整理 AI Skill、Agent 工具、MCP 服务和具体使用场景。
+- 本地 UI：通过 React 管理瀑布流、详情抽屉、筛选、收藏、搜索和导出。
+- 后台任务：支持定时搜索、仓库扫描任务、标注队列和任务运行记录。
+
+## 技术栈
+
+- 后端：Python、FastAPI、SQLite、Pydantic、LangGraph
+- 前端：React、TypeScript、Vite、Tailwind CSS、React Query、Zustand
+- 数据：SQLite、本地图片资产、Markdown / JSON / CSV 导出
+
+## 界面预览
+
+<div className="grid gap-6">
+  <figure className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-sm">
+    <img src="/resources/prompt-vault-vision/dashboard.png" alt="Prompt Vault Vision 仪表盘" className="w-full" loading="lazy" />
+    <figcaption className="px-4 py-3 text-sm leading-6 text-[#6b7280]">仪表盘集中呈现 GitHub 资源总数、待分级数量、今日新增、分类分布和最近保存的效果图。</figcaption>
+  </figure>
+
+  <div className="grid gap-6 lg:grid-cols-2">
+    <figure className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-sm">
+      <img src="/resources/prompt-vault-vision/image-generation-assets.png" alt="图像生成资产库瀑布流" className="w-full" loading="lazy" />
+      <figcaption className="px-4 py-3 text-sm leading-6 text-[#6b7280]">图像生成资产库用于浏览 Prompt、效果图、来源说明、标签和候选状态。</figcaption>
+    </figure>
+
+    <figure className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-sm">
+      <img src="/resources/prompt-vault-vision/video-generation-assets.png" alt="视频生成资产库瀑布流" className="w-full" loading="lazy" />
+      <figcaption className="px-4 py-3 text-sm leading-6 text-[#6b7280]">视频生成资产库适合沉淀短片、镜头、商业广告和动态运镜类 Prompt。</figcaption>
+    </figure>
+
+    <figure className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-sm">
+      <img src="/resources/prompt-vault-vision/web-ui-assets.png" alt="Web UI 资产库" className="w-full" loading="lazy" />
+      <figcaption className="px-4 py-3 text-sm leading-6 text-[#6b7280]">Web UI 资产库按组件库、设计系统、适用前端和视觉风格组织项目链接。</figcaption>
+    </figure>
+
+    <figure className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-sm">
+      <img src="/resources/prompt-vault-vision/skill-assets.png" alt="Skill 资产库" className="w-full" loading="lazy" />
+      <figcaption className="px-4 py-3 text-sm leading-6 text-[#6b7280]">Skill 资产库整理 Agent 工具包、MCP 服务、Claude / Codex / Cursor 相关能力和适用场景。</figcaption>
+    </figure>
+  </div>
+
+  <figure className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-sm">
+    <img src="/resources/prompt-vault-vision/scheduled-tasks.png" alt="定时任务与运行记录" className="w-full" loading="lazy" />
+    <figcaption className="px-4 py-3 text-sm leading-6 text-[#6b7280]">定时任务页面记录 GitHub 仓库发现、扫描任务、运行状态、下次运行时间和历史结果。</figcaption>
+  </figure>
+</div>
+
+## 适合场景
+
+- 建立自己的视觉 Prompt 案例库。
+- 收集高质量图像生成、视频生成和 UI 生成 Prompt。
+- 维护 Web UI、组件库、设计系统和 Skill 仓库参考。
+- 给 AI 设计、AI 编码、Agent 工具沉淀可检索的素材池。
+- 在本地保存数据，不依赖第三方 SaaS 管理资产。
+
+## 项目地址
+
+[查看 GitHub 仓库](https://github.com/Shark-Overlord/Prompt-Vault-Vision)
