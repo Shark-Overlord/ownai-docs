@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { ArrowRight, LockKeyhole, Search } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { listDocBooks, searchDocs, YuqueBook, YuqueDoc } from '../lib/docsApi';
+import { listDocBooks, listDocToc, searchDocs, YuqueBook, YuqueDoc } from '../lib/docsApi';
 
 export function LearnHomePage() {
   const [books, setBooks] = useState<YuqueBook[]>([]);
+  const [bookEntryPaths, setBookEntryPaths] = useState<Record<string, string>>({});
   const [results, setResults] = useState<YuqueDoc[]>([]);
   const [keyword, setKeyword] = useState('');
   const [loading, setLoading] = useState(true);
@@ -12,11 +13,32 @@ export function LearnHomePage() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    let active = true;
+
     document.title = '教程 - OwnAI';
     listDocBooks()
-      .then(setBooks)
-      .catch(() => setError('教程目录暂时不可用'))
-      .finally(() => setLoading(false));
+      .then(async (nextBooks) => {
+        if (!active) return;
+        setBooks(nextBooks);
+        const entries = await Promise.all(
+          nextBooks.map(async (book) => {
+            const toc = await listDocToc(book.slug).catch(() => []);
+            const firstDoc = toc.find((item) => item.slug);
+            return [book.slug, firstDoc ? `/learn/${book.slug}/${firstDoc.slug}` : `/learn/${book.slug}`] as const;
+          }),
+        );
+        if (active) setBookEntryPaths(Object.fromEntries(entries));
+      })
+      .catch(() => {
+        if (active) setError('教程目录暂时不可用');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   async function handleSearch(value: string) {
@@ -89,7 +111,7 @@ export function LearnHomePage() {
             <Link
               className="group min-h-[220px] rounded-2xl border border-[#e5e7eb] bg-white p-7 text-inherit no-underline transition hover:-translate-y-1.5 hover:border-[#1677ff] hover:shadow-[0_22px_50px_rgba(22,119,255,0.13)]"
               key={book.id}
-              to={`/learn/${book.slug}`}
+              to={bookEntryPaths[book.slug] || `/learn/${book.slug}`}
             >
               <div className="flex items-center justify-between">
                 <span className="rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#1677ff]">
