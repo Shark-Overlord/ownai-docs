@@ -1,6 +1,7 @@
+import type { ClipboardEvent } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import DOMPurify from 'dompurify';
-import { BookOpen, ChevronLeft, FileText, Menu, X } from 'lucide-react';
+import { BookOpen, ChevronLeft, FileText, Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { ApiError } from '../lib/api';
 import { getDoc, listDocBooks, listDocToc, YuqueBook, YuqueDoc, YuqueTocItem } from '../lib/docsApi';
@@ -19,6 +20,7 @@ export function LearnDocPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeHeadingId, setActiveHeadingId] = useState('');
   const contentRef = useRef<HTMLDivElement | null>(null);
 
@@ -95,12 +97,21 @@ export function LearnDocPage() {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  function handleArticleCopy(event: ClipboardEvent<HTMLElement>) {
+    const selection = window.getSelection();
+    const selectedNode = selection?.anchorNode;
+    const selectedElement = selectedNode instanceof Element ? selectedNode : selectedNode?.parentElement;
+    if (selectedElement?.closest('pre, code, .code-block-extension')) return;
+    event.preventDefault();
+  }
+
   const currentIndex = toc.findIndex((item) => item.slug === docSlug);
   const prevDoc = currentIndex > 0 ? toc[currentIndex - 1] : null;
   const nextDoc = currentIndex >= 0 && currentIndex < toc.length - 1 ? toc[currentIndex + 1] : null;
 
   return (
-    <main className="min-h-[calc(100vh-64px)] bg-[#f7f8fb]">
+    <main className="learn-doc-shell min-h-[calc(100vh-64px)] bg-white" onCopy={handleArticleCopy}>
+      <WatermarkPattern />
       <div className="sticky top-[64px] z-10 hidden h-14 items-center justify-between border-b border-[#e8edf5] bg-white/95 px-5 backdrop-blur max-[920px]:flex">
         <button
           className="inline-flex h-9 items-center gap-2 rounded-full border border-[#dbe3ef] bg-white px-3 text-sm font-bold text-[#334155]"
@@ -122,14 +133,29 @@ export function LearnDocPage() {
         />
       ) : null}
 
-      <div className="grid grid-cols-[310px_minmax(0,1fr)_260px] max-[1280px]:grid-cols-[300px_minmax(0,1fr)] max-[920px]:block">
+      <div
+        className={[
+          'learn-doc-layout grid grid-cols-[360px_minmax(0,1fr)_270px] max-[1280px]:grid-cols-[340px_minmax(0,1fr)] max-[920px]:block',
+          sidebarCollapsed ? 'learn-doc-layout--collapsed' : '',
+        ].join(' ')}
+      >
         <aside
           className={[
-            'sticky top-[64px] h-[calc(100vh-64px)] overflow-y-auto border-r border-[#e8edf5] bg-white px-5 py-6',
+            'learn-doc-sidebar sticky top-[64px] h-[calc(100vh-64px)] overflow-y-auto border-r border-[#eef1f5] bg-white px-3 py-5',
             'max-[920px]:fixed max-[920px]:left-0 max-[920px]:top-0 max-[920px]:z-40 max-[920px]:h-screen max-[920px]:w-[82vw] max-[920px]:max-w-[340px] max-[920px]:shadow-2xl max-[920px]:transition-transform',
             sidebarOpen ? 'max-[920px]:translate-x-0' : 'max-[920px]:-translate-x-full',
           ].join(' ')}
         >
+          <button
+            className="learn-doc-sidebar-collapse max-[920px]:hidden"
+            type="button"
+            title={sidebarCollapsed ? '展开' : '收起'}
+            aria-label={sidebarCollapsed ? '展开左侧目录' : '收起左侧目录'}
+            onClick={() => setSidebarCollapsed((value) => !value)}
+          >
+            {sidebarCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+          </button>
+          <div className="learn-doc-sidebar-inner">
           <div className="mb-6 flex items-start justify-between gap-4">
             <Link className="inline-flex items-center gap-2 text-sm font-bold text-[#64748b] no-underline hover:text-[#1677ff]" to="/learn">
               <ChevronLeft size={16} />
@@ -147,7 +173,7 @@ export function LearnDocPage() {
 
           <div className="rounded-2xl border border-[#e8edf5] bg-[#f8fbff] p-4">
             <div className="flex items-center gap-3">
-              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#1677ff] text-white">
+              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#00b96b] text-white">
                 <BookOpen size={18} />
               </span>
               <div className="min-w-0">
@@ -167,8 +193,8 @@ export function LearnDocPage() {
                     className={[
                       'group flex min-h-10 items-center gap-2 rounded-xl py-2 pr-3 text-sm leading-snug no-underline transition',
                       isActive
-                        ? 'bg-[#eef5ff] font-extrabold text-[#1677ff]'
-                        : 'text-[#475569] hover:bg-[#f4f7fb] hover:text-[#1677ff]',
+                        ? 'bg-[#eff0f0] font-extrabold text-[#202124]'
+                        : 'text-[#475569] hover:bg-[#f5f5f5] hover:text-[#202124]',
                     ].join(' ')}
                     key={item.id}
                     style={{ paddingLeft: `${12 + Math.min(Math.max(item.depth - 1, 0), 5) * 14}px` }}
@@ -182,10 +208,11 @@ export function LearnDocPage() {
               })}
             </div>
           </nav>
+          </div>
         </aside>
 
-        <section className="min-w-0 px-10 py-12 max-[920px]:px-5 max-[920px]:py-8">
-          <div className="mx-auto max-w-[860px]">
+        <section className="learn-doc-main min-w-0 px-10 py-12 max-[920px]:px-5 max-[920px]:py-8">
+          <div className="mx-auto max-w-[820px]">
             {loading ? <p className="mt-8 text-[#64748b]">加载中...</p> : null}
             {error ? (
               <div className="mt-8 rounded-3xl border border-red-100 bg-white px-7 py-6 shadow-sm">
@@ -211,7 +238,7 @@ export function LearnDocPage() {
                   <p className="mb-4 mt-8 text-sm font-extrabold uppercase tracking-[0.22em] text-[#1677ff]">
                     {book?.name || 'OwnAI Learn'}
                   </p>
-                  <h1 className="m-0 text-[44px] font-black leading-tight tracking-normal text-[#111827] max-[760px]:text-[34px]">
+                  <h1 className="m-0 text-[42px] font-black leading-[1.22] tracking-normal text-[#202124] max-[760px]:text-[34px]">
                     {doc.title}
                   </h1>
                   {doc.description ? (
@@ -256,7 +283,7 @@ export function LearnDocPage() {
           </div>
         </section>
 
-        <aside className="sticky top-[88px] h-[calc(100vh-88px)] overflow-y-auto border-l border-[#e8edf5] bg-[#f7f8fb] px-6 py-10 max-[1280px]:hidden">
+        <aside className="learn-doc-outline sticky top-[88px] h-[calc(100vh-88px)] overflow-y-auto border-l border-[#eef1f5] bg-white px-6 py-10 max-[1280px]:hidden">
           <p className="mb-4 text-sm font-extrabold text-[#111827]">大纲</p>
           {preparedContent.outline.length > 0 ? (
             <nav className="space-y-1" aria-label="文章大纲">
@@ -264,7 +291,7 @@ export function LearnDocPage() {
                 <button
                   className={[
                     'block w-full rounded-lg py-2 pr-2 text-left text-sm leading-snug transition',
-                    activeHeadingId === item.id ? 'font-extrabold text-[#1677ff]' : 'text-[#64748b] hover:bg-white hover:text-[#1677ff]',
+                    activeHeadingId === item.id ? 'font-extrabold text-[#00b96b]' : 'text-[#64748b] hover:bg-white hover:text-[#202124]',
                   ].join(' ')}
                   key={item.id}
                   style={{ paddingLeft: `${Math.max(item.level - 2, 0) * 14 + 8}px` }}
@@ -320,6 +347,16 @@ function prepareYuqueHtml(rawHtml: string): { html: string; outline: OutlineItem
   });
 
   return { html: parsed.body.innerHTML, outline };
+}
+
+function WatermarkPattern() {
+  return (
+    <div className="learn-reader-watermark" aria-hidden="true">
+      {Array.from({ length: 30 }).map((_, index) => (
+        <span key={index}>wonai</span>
+      ))}
+    </div>
+  );
 }
 
 function normalizeText(value: string) {
