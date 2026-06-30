@@ -19,7 +19,6 @@ export function LearnHomePage() {
     listDocBooks()
       .then(async (nextBooks) => {
         if (!active) return;
-        setBooks(nextBooks);
         const entries = await Promise.all(
           nextBooks.map(async (book) => {
             const toc = await listDocToc(book.slug).catch(() => []);
@@ -27,7 +26,9 @@ export function LearnHomePage() {
             return [book.slug, firstDoc ? `/learn/${book.slug}/${firstDoc.slug}` : `/learn/${book.slug}`] as const;
           }),
         );
-        if (active) setBookEntryPaths(Object.fromEntries(entries));
+        if (!active) return;
+        setBookEntryPaths(Object.fromEntries(entries));
+        setBooks(nextBooks);
       })
       .catch(() => {
         if (active) setError('教程目录暂时不可用');
