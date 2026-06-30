@@ -1,20 +1,26 @@
 import {
+  LogIn,
+  LogOut,
   Search,
+  UserCircle,
 } from 'lucide-react';
 import { FormEvent, useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../lib/auth';
 import logo from '../pages/assert/image/logo.png';
 
 const navItems = [
   { to: '/design', label: '\u8bbe\u8ba1' },
   { to: '/components', label: '\u7ec4\u4ef6' },
   { to: '/resources', label: '\u8d44\u6e90' },
+  { to: '/learn', label: '\u6559\u7a0b' },
 ];
 
 export function Header() {
   const [query, setQuery] = useState('');
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -76,6 +82,27 @@ export function Header() {
             {item.label}
           </NavLink>
         ))}
+        {user ? (
+          <button
+            className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-full border border-[#e5e7eb] bg-white px-4 text-sm font-bold text-[#334155] transition hover:border-[#1677ff] hover:text-[#1677ff]"
+            type="button"
+            onClick={() => void logout()}
+            title="\u9000\u51fa\u767b\u5f55"
+          >
+            <UserCircle size={17} />
+            <span>{user.userName || user.userAccount || 'OwnAI'}</span>
+            <LogOut size={16} />
+          </button>
+        ) : (
+          <button
+            className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-full bg-[#1677ff] px-4 text-sm font-bold text-white transition hover:bg-[#095fd8]"
+            type="button"
+            onClick={() => navigate('/login')}
+          >
+            <LogIn size={16} />
+            <span>\u767b\u5f55</span>
+          </button>
+        )}
       </nav>
     </header>
   );
