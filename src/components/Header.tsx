@@ -100,7 +100,7 @@ export function Header() {
             onClick={() => navigate('/login')}
           >
             <LogIn size={16} />
-            <span>\u767b\u5f55</span>
+            <span>登录</span>
           </button>
         )}
       </nav>
