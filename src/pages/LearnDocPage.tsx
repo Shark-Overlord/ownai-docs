@@ -1,7 +1,10 @@
-import type { ClipboardEvent, CSSProperties } from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import type { ClipboardEvent, CSSProperties, ReactNode } from 'react';
+import { isValidElement, useEffect, useMemo, useRef, useState } from 'react';
 import DOMPurify from 'dompurify';
-import { ChevronDown, ChevronLeft, ChevronRight, FileText, List, Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
+import ReactMarkdown, { type Components } from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { visit } from 'unist-util-visit';
+import { Check, ChevronDown, ChevronLeft, ChevronRight, Copy, FileText, List, Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { ApiError } from '../lib/api';
 import { getDoc, listDocBooks, listDocToc, YuqueBook, YuqueDoc, YuqueTocItem } from '../lib/docsApi';
@@ -14,6 +17,25 @@ type OutlineItem = {
 
 type OutlineTreeItem = OutlineItem & {
   children: OutlineTreeItem[];
+};
+
+type PreparedContent = {
+  html: string;
+  markdown: string;
+  outline: OutlineItem[];
+  renderKey: string;
+  type: 'html' | 'markdown' | 'empty';
+};
+
+type MarkdownAstNode = {
+  type?: string;
+  depth?: number;
+  value?: string;
+  alt?: string;
+  children?: MarkdownAstNode[];
+  data?: {
+    hProperties?: Record<string, unknown>;
+  };
 };
 
 export function LearnDocPage() {
@@ -71,7 +93,11 @@ export function LearnDocPage() {
     };
   }, [bookSlug, docSlug]);
 
-  const preparedContent = useMemo(() => prepareYuqueHtml(doc?.bodyHtml || ''), [doc?.bodyHtml]);
+  const preparedContent = useMemo(
+    () => prepareYuqueContent(doc?.bodyMarkdown || '', doc?.bodyHtml || ''),
+    [doc?.bodyHtml, doc?.bodyMarkdown],
+  );
+  const markdownComponents = useMemo(() => createMarkdownComponents(), []);
   const outlineTree = useMemo(() => buildOutlineTree(preparedContent.outline), [preparedContent.outline]);
   const activeOutlinePath = useMemo(
     () => findOutlinePath(outlineTree, activeHeadingId),
@@ -101,11 +127,11 @@ export function LearnDocPage() {
 
     headings.forEach((heading) => observer.observe(heading));
     return () => observer.disconnect();
-  }, [preparedContent.html, preparedContent.outline.length]);
+  }, [preparedContent.renderKey, preparedContent.outline.length]);
 
   useEffect(() => {
     setExpandedOutlineIds(new Set());
-  }, [preparedContent.html]);
+  }, [preparedContent.renderKey]);
 
   useEffect(() => {
     if (activeOutlinePath.length <= 1) return;
@@ -309,7 +335,16 @@ export function LearnDocPage() {
                   ) : null}
                 </div>
 
-                {preparedContent.html ? (
+                {preparedContent.type === 'markdown' ? (
+                  <div ref={contentRef} className="ownai-yuque-content learn-reader-content">
+                    <ReactMarkdown
+                      components={markdownComponents}
+                      remarkPlugins={[remarkGfm, remarkHeadingAnchors]}
+                    >
+                      {preparedContent.markdown}
+                    </ReactMarkdown>
+                  </div>
+                ) : preparedContent.type === 'html' ? (
                   <div
                     ref={contentRef}
                     className="ownai-yuque-content learn-reader-content"
@@ -358,7 +393,33 @@ export function LearnDocPage() {
   );
 }
 
-function prepareYuqueHtml(rawHtml: string): { html: string; outline: OutlineItem[] } {
+function prepareYuqueContent(rawMarkdown: string, rawHtml: string): PreparedContent {
+  if (rawMarkdown.trim()) {
+    const markdown = rawMarkdown.trim();
+    return {
+      html: '',
+      markdown,
+      outline: extractMarkdownOutline(markdown),
+      renderKey: `markdown:${hashText(markdown)}`,
+      type: 'markdown',
+    };
+  }
+
+  if (rawHtml.trim()) {
+    const preparedHtml = prepareYuqueHtml(rawHtml);
+    return {
+      html: preparedHtml.html,
+      markdown: '',
+      outline: preparedHtml.outline,
+      renderKey: `html:${hashText(preparedHtml.html)}`,
+      type: 'html',
+    };
+  }
+
+  return { html: '', markdown: '', outline: [], renderKey: 'empty', type: 'empty' };
+}
+
+function prepareYuqueHtml(rawHtml: string): Pick<PreparedContent, 'html' | 'outline'> {
   if (!rawHtml || typeof window === 'undefined') return { html: rawHtml, outline: [] };
 
   const cleanHtml = DOMPurify.sanitize(rawHtml, {
@@ -394,6 +455,106 @@ function prepareYuqueHtml(rawHtml: string): { html: string; outline: OutlineItem
   });
 
   return { html: parsed.body.innerHTML, outline };
+}
+
+function extractMarkdownOutline(markdown: string): OutlineItem[] {
+  const outline: OutlineItem[] = [];
+  const usedIds = new Set<string>();
+  let inFence = false;
+  let headingIndex = 0;
+
+  markdown.split(/\r?\n/).forEach((line) => {
+    const fenceMatch = line.match(/^\s*(```|~~~)/);
+    if (fenceMatch) {
+      inFence = !inFence;
+      return;
+    }
+    if (inFence) return;
+
+    const headingMatch = line.match(/^(#{1,4})\s+(.+?)\s*#*\s*$/);
+    if (!headingMatch) return;
+
+    const title = normalizeText(stripMarkdownInline(headingMatch[2]));
+    if (!title) return;
+
+    headingIndex += 1;
+    const level = headingMatch[1].length;
+    const id = uniqueHeadingId(`heading-${headingIndex}-${hashText(title)}`, usedIds);
+    outline.push({ id, title, level });
+  });
+
+  return outline;
+}
+
+function remarkHeadingAnchors() {
+  return (tree: MarkdownAstNode) => {
+    const usedIds = new Set<string>();
+    let headingIndex = 0;
+
+    visit(tree as never, 'heading', (node: MarkdownAstNode) => {
+      const level = node.depth || 0;
+      if (level < 1 || level > 4) return;
+
+      const title = normalizeText(markdownNodeText(node));
+      if (!title) return;
+
+      headingIndex += 1;
+      const id = uniqueHeadingId(`heading-${headingIndex}-${hashText(title)}`, usedIds);
+      node.data = node.data || {};
+      node.data.hProperties = {
+        ...(node.data.hProperties || {}),
+        id,
+        className: 'ownai-heading-anchor',
+      };
+    });
+  };
+}
+
+function createMarkdownComponents(): Components {
+  return {
+    a({ children, href, ...props }) {
+      return (
+        <a href={href} target={href?.startsWith('#') ? undefined : '_blank'} rel="noreferrer" {...props}>
+          {children}
+        </a>
+      );
+    },
+    img({ alt, src, ...props }) {
+      return (
+        <img
+          {...props}
+          alt={alt || ''}
+          src={normalizeMarkdownAssetUrl(src)}
+          loading="lazy"
+          className="learn-markdown-image"
+        />
+      );
+    },
+    pre({ children }) {
+      return <MarkdownCodeBlock code={extractReactNodeText(children)}>{children}</MarkdownCodeBlock>;
+    },
+  };
+}
+
+function MarkdownCodeBlock({ children, code }: { children: ReactNode; code: string }) {
+  const [copied, setCopied] = useState(false);
+
+  async function copyCode() {
+    if (!code.trim()) return;
+    await navigator.clipboard.writeText(code.replace(/\n$/, ''));
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1400);
+  }
+
+  return (
+    <div className="learn-code-block code-block-extension">
+      <button className="learn-code-copy" type="button" onClick={copyCode}>
+        {copied ? <Check size={14} /> : <Copy size={14} />}
+        <span>{copied ? '已复制' : '复制'}</span>
+      </button>
+      <pre>{children}</pre>
+    </div>
+  );
 }
 
 function buildOutlineTree(items: OutlineItem[]): OutlineTreeItem[] {
@@ -442,6 +603,34 @@ function WatermarkPattern() {
 
 function normalizeText(value: string) {
   return value.replace(/\s+/g, ' ').trim();
+}
+
+function stripMarkdownInline(value: string) {
+  return value
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/[`*_~]/g, '')
+    .replace(/<[^>]+>/g, '');
+}
+
+function markdownNodeText(node: MarkdownAstNode): string {
+  if (!node) return '';
+  if (typeof node.value === 'string') return node.value;
+  if (typeof node.alt === 'string') return node.alt;
+  return (node.children || []).map(markdownNodeText).join('');
+}
+
+function normalizeMarkdownAssetUrl(src: string | undefined) {
+  if (!src) return '';
+  if (src.startsWith('//')) return `https:${src}`;
+  return src;
+}
+
+function extractReactNodeText(node: ReactNode): string {
+  if (typeof node === 'string' || typeof node === 'number') return String(node);
+  if (Array.isArray(node)) return node.map(extractReactNodeText).join('');
+  if (isValidElement<{ children?: ReactNode }>(node)) return extractReactNodeText(node.props.children);
+  return '';
 }
 
 function uniqueHeadingId(base: string, usedIds: Set<string>) {
