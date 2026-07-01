@@ -279,15 +279,16 @@ export function LearnDocPage() {
               {preparedContent.outline.map((item) => (
                 <button
                   className={[
-                    'block w-full rounded-lg py-2 pr-2 text-left text-sm leading-snug transition',
+                    'flex w-full min-w-0 items-center overflow-hidden rounded-lg py-2 pr-2 text-left text-sm leading-snug transition',
                     activeHeadingId === item.id ? 'font-extrabold text-[#00b96b]' : 'text-[#64748b] hover:bg-white hover:text-[#202124]',
                   ].join(' ')}
                   key={item.id}
                   style={{ paddingLeft: `${Math.max(item.level - 2, 0) * 14 + 8}px` }}
+                  title={item.title}
                   type="button"
                   onClick={() => jumpToHeading(item.id)}
                 >
-                  {item.title}
+                  <span className="min-w-0 flex-1 truncate">{item.title}</span>
                 </button>
               ))}
             </nav>
