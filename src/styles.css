@@ -148,6 +148,7 @@
   border-radius: 8px;
   padding: 8px 8px 8px calc(4px + var(--outline-indent, 0px));
   color: #64748b;
+  cursor: pointer;
   text-align: left;
   line-height: 1.35;
   transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
