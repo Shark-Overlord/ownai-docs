@@ -223,11 +223,7 @@ export function LearnDocPage() {
             {doc ? (
               <article className="learn-reader-article">
                 <div className="mb-10">
-                  <Link className="inline-flex items-center gap-2 text-sm font-bold text-[#64748b] no-underline hover:text-[#1677ff]" to={`/learn/${bookSlug}`}>
-                    <ChevronLeft size={16} />
-                    返回目录
-                  </Link>
-                  <h1 className="m-0 mt-8 text-[42px] font-black leading-[1.22] tracking-normal text-[#202124] max-[760px]:text-[34px]">
+                  <h1 className="m-0 text-[42px] font-black leading-[1.22] tracking-normal text-[#202124] max-[760px]:text-[34px]">
                     {doc.title}
                   </h1>
                   {doc.description ? (
