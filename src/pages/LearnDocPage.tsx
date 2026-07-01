@@ -1,7 +1,7 @@
 import type { ClipboardEvent } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import DOMPurify from 'dompurify';
-import { ChevronLeft, FileText, Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
+import { ChevronLeft, FileText, List, Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { ApiError } from '../lib/api';
 import { getDoc, listDocBooks, listDocToc, YuqueBook, YuqueDoc, YuqueTocItem } from '../lib/docsApi';
@@ -172,7 +172,10 @@ export function LearnDocPage() {
           </div>
 
           <nav className="mt-6" aria-label="教程目录">
-            <p className="mb-3 px-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#94a3b8]">Contents</p>
+            <div className="learn-doc-sidebar-title">
+              <List size={16} />
+              <span>目录</span>
+            </div>
             <div className="space-y-1">
               {toc.map((item) => {
                 const isActive = item.slug === docSlug;
@@ -186,11 +189,12 @@ export function LearnDocPage() {
                     ].join(' ')}
                     key={item.id}
                     style={{ paddingLeft: `${12 + Math.min(Math.max(item.depth - 1, 0), 5) * 14}px` }}
+                    title={item.title}
                     to={`/learn/${bookSlug}/${item.slug}`}
                     onClick={() => setSidebarOpen(false)}
                   >
                     <FileText size={15} className="shrink-0 opacity-70" />
-                    <span className="line-clamp-2">{item.title}</span>
+                    <span className="min-w-0 flex-1 truncate">{item.title}</span>
                   </Link>
                 );
               })}
@@ -223,10 +227,7 @@ export function LearnDocPage() {
                     <ChevronLeft size={16} />
                     返回目录
                   </Link>
-                  <p className="mb-4 mt-8 text-sm font-extrabold uppercase tracking-[0.22em] text-[#1677ff]">
-                    {book?.name || 'OwnAI Learn'}
-                  </p>
-                  <h1 className="m-0 text-[42px] font-black leading-[1.22] tracking-normal text-[#202124] max-[760px]:text-[34px]">
+                  <h1 className="m-0 mt-8 text-[42px] font-black leading-[1.22] tracking-normal text-[#202124] max-[760px]:text-[34px]">
                     {doc.title}
                   </h1>
                   {doc.description ? (

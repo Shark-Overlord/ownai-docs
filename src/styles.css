@@ -115,6 +115,18 @@
   box-shadow: 0 10px 28px rgba(22, 119, 255, 0.14);
 }
 
+.learn-doc-sidebar-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 0 8px;
+  color: #202124;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
 .learn-doc-main,
 .learn-doc-outline,
 .learn-doc-sidebar {
