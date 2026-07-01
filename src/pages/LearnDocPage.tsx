@@ -1,4 +1,4 @@
-import type { ClipboardEvent } from 'react';
+import type { ClipboardEvent, CSSProperties } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import DOMPurify from 'dompurify';
 import { ChevronLeft, FileText, List, Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
@@ -279,11 +279,12 @@ export function LearnDocPage() {
               {preparedContent.outline.map((item) => (
                 <button
                   className={[
-                    'flex w-full min-w-0 items-center overflow-hidden rounded-lg py-2 pr-2 text-left text-sm leading-snug transition',
-                    activeHeadingId === item.id ? 'font-extrabold text-[#00b96b]' : 'text-[#64748b] hover:bg-white hover:text-[#202124]',
+                    'learn-doc-outline-item',
+                    `learn-doc-outline-item--level-${Math.min(Math.max(item.level, 1), 4)}`,
+                    activeHeadingId === item.id ? 'learn-doc-outline-item--active' : '',
                   ].join(' ')}
                   key={item.id}
-                  style={{ paddingLeft: `${Math.max(item.level - 2, 0) * 14 + 8}px` }}
+                  style={{ '--outline-indent': `${Math.max(item.level - 2, 0) * 16}px` } as CSSProperties}
                   title={item.title}
                   type="button"
                   onClick={() => jumpToHeading(item.id)}

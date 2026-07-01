@@ -133,6 +133,75 @@
   background: #ffffff;
 }
 
+.learn-doc-outline nav {
+  position: relative;
+}
+
+.learn-doc-outline-item {
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  overflow: hidden;
+  border-radius: 8px;
+  padding: 8px 8px 8px calc(8px + var(--outline-indent, 0px));
+  color: #64748b;
+  text-align: left;
+  line-height: 1.35;
+  transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.learn-doc-outline-item::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--outline-indent, 0px) + 1px);
+  top: 9px;
+  bottom: 9px;
+  width: 2px;
+  border-radius: 999px;
+  background: transparent;
+  transition: background-color 160ms ease;
+}
+
+.learn-doc-outline-item:hover {
+  background: #f5f7fa;
+  color: #202124;
+  box-shadow: inset 0 0 0 1px rgba(226, 232, 240, 0.8);
+}
+
+.learn-doc-outline-item:hover::before {
+  background: #cbd5e1;
+}
+
+.learn-doc-outline-item--active {
+  background: #effaf5;
+  color: #00a862;
+  font-weight: 800;
+}
+
+.learn-doc-outline-item--active::before {
+  background: #00b96b;
+}
+
+.learn-doc-outline-item--level-1,
+.learn-doc-outline-item--level-2 {
+  font-size: 14px;
+}
+
+.learn-doc-outline-item--level-2 {
+  font-weight: 650;
+}
+
+.learn-doc-outline-item--level-3,
+.learn-doc-outline-item--level-4 {
+  font-size: 13px;
+}
+
+.learn-doc-outline-item--level-4 {
+  color: #8492a6;
+}
+
 .learn-reader-watermark {
   position: fixed;
   inset: 64px 0 0;
