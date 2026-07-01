@@ -65,7 +65,7 @@
 }
 
 .learn-doc-layout--collapsed {
-  grid-template-columns: 0 minmax(0, 1fr) 270px !important;
+  grid-template-columns: 0 minmax(0, 1fr) 340px !important;
 }
 
 .learn-doc-sidebar {
@@ -143,9 +143,10 @@
   width: 100%;
   min-width: 0;
   align-items: center;
+  gap: 4px;
   overflow: hidden;
   border-radius: 8px;
-  padding: 8px 8px 8px calc(8px + var(--outline-indent, 0px));
+  padding: 8px 8px 8px calc(4px + var(--outline-indent, 0px));
   color: #64748b;
   text-align: left;
   line-height: 1.35;
@@ -189,6 +190,10 @@
   font-size: 14px;
 }
 
+.learn-doc-outline-item--parent {
+  color: #334155;
+}
+
 .learn-doc-outline-item--level-2 {
   font-weight: 650;
 }
@@ -200,6 +205,20 @@
 
 .learn-doc-outline-item--level-4 {
   color: #8492a6;
+}
+
+.learn-doc-outline-caret {
+  display: inline-flex;
+  width: 16px;
+  height: 18px;
+  flex: 0 0 16px;
+  align-items: center;
+  justify-content: center;
+  color: #334155;
+}
+
+.learn-doc-outline-caret svg {
+  stroke-width: 2.4;
 }
 
 .learn-reader-watermark {

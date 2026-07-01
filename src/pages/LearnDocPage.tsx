@@ -1,7 +1,7 @@
 import type { ClipboardEvent, CSSProperties } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import DOMPurify from 'dompurify';
-import { ChevronLeft, FileText, List, Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, FileText, List, Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { ApiError } from '../lib/api';
 import { getDoc, listDocBooks, listDocToc, YuqueBook, YuqueDoc, YuqueTocItem } from '../lib/docsApi';
@@ -10,6 +10,10 @@ type OutlineItem = {
   id: string;
   title: string;
   level: number;
+};
+
+type OutlineTreeItem = OutlineItem & {
+  children: OutlineTreeItem[];
 };
 
 export function LearnDocPage() {
@@ -22,6 +26,7 @@ export function LearnDocPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeHeadingId, setActiveHeadingId] = useState('');
+  const [expandedOutlineIds, setExpandedOutlineIds] = useState<Set<string>>(new Set());
   const contentRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -67,6 +72,11 @@ export function LearnDocPage() {
   }, [bookSlug, docSlug]);
 
   const preparedContent = useMemo(() => prepareYuqueHtml(doc?.bodyHtml || ''), [doc?.bodyHtml]);
+  const outlineTree = useMemo(() => buildOutlineTree(preparedContent.outline), [preparedContent.outline]);
+  const activeOutlinePath = useMemo(
+    () => findOutlinePath(outlineTree, activeHeadingId),
+    [activeHeadingId, outlineTree],
+  );
 
   useEffect(() => {
     const root = contentRef.current;
@@ -93,8 +103,73 @@ export function LearnDocPage() {
     return () => observer.disconnect();
   }, [preparedContent.html, preparedContent.outline.length]);
 
+  useEffect(() => {
+    setExpandedOutlineIds(new Set());
+  }, [preparedContent.html]);
+
+  useEffect(() => {
+    if (activeOutlinePath.length <= 1) return;
+    setExpandedOutlineIds((previous) => {
+      const next = new Set(previous);
+      let changed = false;
+      activeOutlinePath.slice(0, -1).forEach((id) => {
+        if (!next.has(id)) {
+          next.add(id);
+          changed = true;
+        }
+      });
+      return changed ? next : previous;
+    });
+  }, [activeOutlinePath]);
+
   function jumpToHeading(id: string) {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function toggleOutlineItem(item: OutlineTreeItem) {
+    if (item.children.length > 0) {
+      setExpandedOutlineIds((previous) => {
+        const next = new Set(previous);
+        if (next.has(item.id)) {
+          next.delete(item.id);
+        } else {
+          next.add(item.id);
+        }
+        return next;
+      });
+    }
+    jumpToHeading(item.id);
+  }
+
+  function renderOutlineItems(items: OutlineTreeItem[], depth = 0) {
+    return items.map((item) => {
+      const hasChildren = item.children.length > 0;
+      const isExpanded = expandedOutlineIds.has(item.id);
+      const isActive = activeHeadingId === item.id;
+
+      return (
+        <div className="learn-doc-outline-node" key={item.id}>
+          <button
+            className={[
+              'learn-doc-outline-item',
+              `learn-doc-outline-item--level-${Math.min(Math.max(item.level, 1), 4)}`,
+              isActive ? 'learn-doc-outline-item--active' : '',
+              hasChildren ? 'learn-doc-outline-item--parent' : '',
+            ].join(' ')}
+            style={{ '--outline-indent': `${depth * 18}px` } as CSSProperties}
+            title={item.title}
+            type="button"
+            onClick={() => toggleOutlineItem(item)}
+          >
+            <span className="learn-doc-outline-caret" aria-hidden="true">
+              {hasChildren ? (isExpanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />) : null}
+            </span>
+            <span className="min-w-0 flex-1 truncate">{item.title}</span>
+          </button>
+          {hasChildren && isExpanded ? renderOutlineItems(item.children, depth + 1) : null}
+        </div>
+      );
+    });
   }
 
   function handleArticleCopy(event: ClipboardEvent<HTMLElement>) {
@@ -135,7 +210,7 @@ export function LearnDocPage() {
 
       <div
         className={[
-          'learn-doc-layout grid grid-cols-[360px_minmax(0,1fr)_270px] max-[1280px]:grid-cols-[340px_minmax(0,1fr)] max-[920px]:block',
+          'learn-doc-layout grid grid-cols-[360px_minmax(0,1fr)_340px] max-[1360px]:grid-cols-[340px_minmax(0,1fr)] max-[920px]:block',
           sidebarCollapsed ? 'learn-doc-layout--collapsed' : '',
         ].join(' ')}
       >
@@ -268,26 +343,11 @@ export function LearnDocPage() {
           </div>
         </section>
 
-        <aside className="learn-doc-outline sticky top-[88px] h-[calc(100vh-88px)] overflow-y-auto border-l border-[#eef1f5] bg-white px-6 py-10 max-[1280px]:hidden">
+        <aside className="learn-doc-outline sticky top-[88px] h-[calc(100vh-88px)] overflow-y-auto border-l border-[#eef1f5] bg-white px-6 py-10 max-[1360px]:hidden">
           <p className="mb-4 text-sm font-extrabold text-[#111827]">大纲</p>
-          {preparedContent.outline.length > 0 ? (
+          {outlineTree.length > 0 ? (
             <nav className="space-y-1" aria-label="文章大纲">
-              {preparedContent.outline.map((item) => (
-                <button
-                  className={[
-                    'learn-doc-outline-item',
-                    `learn-doc-outline-item--level-${Math.min(Math.max(item.level, 1), 4)}`,
-                    activeHeadingId === item.id ? 'learn-doc-outline-item--active' : '',
-                  ].join(' ')}
-                  key={item.id}
-                  style={{ '--outline-indent': `${Math.max(item.level - 2, 0) * 16}px` } as CSSProperties}
-                  title={item.title}
-                  type="button"
-                  onClick={() => jumpToHeading(item.id)}
-                >
-                  <span className="min-w-0 flex-1 truncate">{item.title}</span>
-                </button>
-              ))}
+              {renderOutlineItems(outlineTree)}
             </nav>
           ) : (
             <p className="text-sm leading-6 text-[#94a3b8]">当前文章没有可生成大纲的标题。</p>
@@ -334,6 +394,40 @@ function prepareYuqueHtml(rawHtml: string): { html: string; outline: OutlineItem
   });
 
   return { html: parsed.body.innerHTML, outline };
+}
+
+function buildOutlineTree(items: OutlineItem[]): OutlineTreeItem[] {
+  const roots: OutlineTreeItem[] = [];
+  const stack: OutlineTreeItem[] = [];
+
+  items.forEach((item) => {
+    const node: OutlineTreeItem = { ...item, children: [] };
+    while (stack.length > 0 && stack[stack.length - 1].level >= node.level) {
+      stack.pop();
+    }
+
+    if (stack.length === 0) {
+      roots.push(node);
+    } else {
+      stack[stack.length - 1].children.push(node);
+    }
+
+    stack.push(node);
+  });
+
+  return roots;
+}
+
+function findOutlinePath(items: OutlineTreeItem[], targetId: string): string[] {
+  if (!targetId) return [];
+
+  for (const item of items) {
+    if (item.id === targetId) return [item.id];
+    const childPath = findOutlinePath(item.children, targetId);
+    if (childPath.length > 0) return [item.id, ...childPath];
+  }
+
+  return [];
 }
 
 function WatermarkPattern() {
