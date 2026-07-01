@@ -1,5 +1,5 @@
 import type { ClipboardEvent, CSSProperties, ReactNode } from 'react';
-import { isValidElement, useEffect, useMemo, useRef, useState } from 'react';
+import { isValidElement, lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import DOMPurify from 'dompurify';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import Zoom from 'react-medium-image-zoom';
@@ -10,6 +10,10 @@ import { Check, ChevronDown, ChevronLeft, ChevronRight, Copy, FileText, List, Me
 import { Link, useParams } from 'react-router-dom';
 import { ApiError } from '../lib/api';
 import { getDoc, listDocBooks, listDocToc, YuqueBook, YuqueDoc, YuqueTocItem } from '../lib/docsApi';
+
+const CodeSyntaxHighlighter = lazy(() =>
+  import('../components/CodeSyntaxHighlighter').then((module) => ({ default: module.CodeSyntaxHighlighter })),
+);
 
 type OutlineItem = {
   id: string;
@@ -547,30 +551,94 @@ function createMarkdownComponents(): Components {
       );
     },
     pre({ children }) {
-      return <MarkdownCodeBlock code={extractReactNodeText(children)}>{children}</MarkdownCodeBlock>;
+      const meta = getCodeBlockMeta(children);
+      return <MarkdownCodeBlock code={meta.code} language={meta.language} />;
     },
   };
 }
 
-function MarkdownCodeBlock({ children, code }: { children: ReactNode; code: string }) {
+function MarkdownCodeBlock({ code, language }: { code: string; language?: string }) {
   const [copied, setCopied] = useState(false);
+  const cleanCode = code.replace(/\n$/, '');
+  const lineCount = cleanCode.split('\n').length;
+  const languageLabel = formatCodeLanguage(language);
 
   async function copyCode() {
-    if (!code.trim()) return;
-    await navigator.clipboard.writeText(code.replace(/\n$/, ''));
+    if (!cleanCode.trim()) return;
+    await navigator.clipboard.writeText(cleanCode);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1400);
   }
 
   return (
     <div className="learn-code-block code-block-extension">
-      <button className="learn-code-copy" type="button" onClick={copyCode}>
-        {copied ? <Check size={14} /> : <Copy size={14} />}
-        <span>{copied ? '已复制' : '复制'}</span>
-      </button>
-      <pre>{children}</pre>
+      <div className="learn-code-header">
+        <div className="learn-code-window-dots" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+        <span className="learn-code-language">{languageLabel}</span>
+        <button className="learn-code-copy" type="button" onClick={copyCode}>
+          {copied ? <Check size={14} /> : <Copy size={14} />}
+          <span>{copied ? '已复制' : '复制'}</span>
+        </button>
+      </div>
+      <Suspense
+        fallback={
+          <pre className="learn-code-fallback">
+            <code>{cleanCode}</code>
+          </pre>
+        }
+      >
+        <CodeSyntaxHighlighter code={cleanCode} language={language} showLineNumbers={lineCount > 6} />
+      </Suspense>
     </div>
   );
+}
+
+function getCodeBlockMeta(children: ReactNode) {
+  const code = extractReactNodeText(children);
+  const child = Array.isArray(children) ? children[0] : children;
+  if (!isValidElement(child)) {
+    return { code, language: undefined };
+  }
+
+  const props = child.props as { className?: string };
+  const match = /language-([\w-]+)/.exec(props.className || '');
+  return { code, language: normalizeCodeLanguage(match?.[1]) };
+}
+
+function normalizeCodeLanguage(language?: string) {
+  if (!language) return undefined;
+  const normalized = language.toLowerCase();
+  const aliases: Record<string, string> = {
+    bash: 'bash',
+    shell: 'bash',
+    sh: 'bash',
+    js: 'javascript',
+    jsx: 'jsx',
+    ts: 'typescript',
+    tsx: 'tsx',
+    py: 'python',
+    yml: 'yaml',
+  };
+  return aliases[normalized] || normalized;
+}
+
+function formatCodeLanguage(language?: string) {
+  if (!language) return 'TEXT';
+  const labels: Record<string, string> = {
+    bash: 'BASH',
+    javascript: 'JS',
+    jsx: 'JSX',
+    typescript: 'TS',
+    tsx: 'TSX',
+    json: 'JSON',
+    python: 'PYTHON',
+    yaml: 'YAML',
+  };
+  return labels[language] || language.toUpperCase();
 }
 
 function buildOutlineTree(items: OutlineItem[]): OutlineTreeItem[] {
