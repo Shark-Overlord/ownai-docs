@@ -1,7 +1,7 @@
 import type { ClipboardEvent } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import DOMPurify from 'dompurify';
-import { BookOpen, ChevronLeft, FileText, Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
+import { ChevronLeft, FileText, Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { ApiError } from '../lib/api';
 import { getDoc, listDocBooks, listDocToc, YuqueBook, YuqueDoc, YuqueTocItem } from '../lib/docsApi';
@@ -169,18 +169,6 @@ export function LearnDocPage() {
             >
               <X size={16} />
             </button>
-          </div>
-
-          <div className="rounded-2xl border border-[#e8edf5] bg-[#f8fbff] p-4">
-            <div className="flex items-center gap-3">
-              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#00b96b] text-white">
-                <BookOpen size={18} />
-              </span>
-              <div className="min-w-0">
-                <p className="m-0 truncate text-[17px] font-extrabold text-[#111827]">{book?.name || bookSlug}</p>
-                <p className="m-0 mt-1 truncate text-xs font-medium text-[#64748b]">{book?.description || '语雀同步知识库'}</p>
-              </div>
-            </div>
           </div>
 
           <nav className="mt-6" aria-label="教程目录">
