@@ -433,6 +433,7 @@ function prepareYuqueHtml(rawHtml: string): Pick<PreparedContent, 'html' | 'outl
       'data-lake-card',
       'frameborder',
       'loading',
+      'referrerpolicy',
       'style',
       'target',
     ],
@@ -452,6 +453,11 @@ function prepareYuqueHtml(rawHtml: string): Pick<PreparedContent, 'html' | 'outl
     heading.setAttribute('id', nextId);
     heading.classList.add('ownai-heading-anchor');
     outline.push({ id: nextId, title, level });
+  });
+
+  parsed.body.querySelectorAll('img').forEach((image) => {
+    image.setAttribute('loading', 'lazy');
+    image.setAttribute('referrerpolicy', 'no-referrer');
   });
 
   return { html: parsed.body.innerHTML, outline };
@@ -526,6 +532,7 @@ function createMarkdownComponents(): Components {
           alt={alt || ''}
           src={normalizeMarkdownAssetUrl(src)}
           loading="lazy"
+          referrerPolicy="no-referrer"
           className="learn-markdown-image"
         />
       );
