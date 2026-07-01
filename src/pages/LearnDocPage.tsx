@@ -2,6 +2,8 @@ import type { ClipboardEvent, CSSProperties, ReactNode } from 'react';
 import { isValidElement, useEffect, useMemo, useRef, useState } from 'react';
 import DOMPurify from 'dompurify';
 import ReactMarkdown, { type Components } from 'react-markdown';
+import Zoom from 'react-medium-image-zoom';
+import 'react-medium-image-zoom/dist/styles.css';
 import remarkGfm from 'remark-gfm';
 import { visit } from 'unist-util-visit';
 import { Check, ChevronDown, ChevronLeft, ChevronRight, Copy, FileText, List, Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
@@ -327,11 +329,16 @@ export function LearnDocPage() {
                   <h1 className="m-0 text-[42px] font-black leading-[1.22] tracking-normal text-[#202124] max-[760px]:text-[34px]">
                     {doc.title}
                   </h1>
-                  {doc.description ? (
-                    <p className="mt-5 text-lg leading-[1.85] text-[#50617a]">{doc.description}</p>
-                  ) : null}
                   {doc.coverUrl ? (
-                    <img className="mt-8 w-full rounded-2xl border border-[#e5e7eb]" src={doc.coverUrl} alt="" />
+                    <Zoom zoomMargin={28}>
+                      <img
+                        className="mx-auto mt-8 block max-w-full rounded-2xl border border-[#e5e7eb]"
+                        src={doc.coverUrl}
+                        alt=""
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                      />
+                    </Zoom>
                   ) : null}
                 </div>
 
@@ -527,14 +534,16 @@ function createMarkdownComponents(): Components {
     },
     img({ alt, src, ...props }) {
       return (
-        <img
-          {...props}
-          alt={alt || ''}
-          src={normalizeMarkdownAssetUrl(src)}
-          loading="lazy"
-          referrerPolicy="no-referrer"
-          className="learn-markdown-image"
-        />
+        <Zoom zoomMargin={28}>
+          <img
+            {...props}
+            alt={alt || ''}
+            src={normalizeMarkdownAssetUrl(src)}
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            className="learn-markdown-image"
+          />
+        </Zoom>
       );
     },
     pre({ children }) {

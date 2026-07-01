@@ -348,9 +348,22 @@
   display: block;
   max-width: 100%;
   height: auto;
-  margin: 1.35em 0;
+  margin: 1.35em auto;
   border-radius: 16px;
   border: 1px solid #e5e7eb;
+}
+
+.learn-reader-article [data-rmiz] {
+  display: block;
+  text-align: center;
+}
+
+.ownai-yuque-content [data-rmiz] {
+  margin: 1.35em auto;
+}
+
+.ownai-yuque-content [data-rmiz] img {
+  margin: 0 auto;
 }
 
 .ownai-yuque-content .learn-markdown-image {
